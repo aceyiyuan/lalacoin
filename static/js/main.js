@@ -178,10 +178,6 @@ document.getElementById("updateButton").addEventListener("click", function () {
 var socket = io();
 
 
-var minPrice = null;
-var maxPrice = null;
-
-
 minPriceRef.on('value', function (snapshot) {
     minPrice = snapshot.val();
 

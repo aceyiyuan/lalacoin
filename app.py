@@ -19,7 +19,7 @@ load_dotenv()
 cred = credentials.Certificate("lala-coin-firebase-serviceaccountKey.json")
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred, {
-        'databaseURL': 'https://yourdatabase-west1.firebasedatabase.app/'
+        'databaseURL': 'https://yourdatabase.firebasedatabase.app/'
     })
 
 # Flask and SocketIO setup
