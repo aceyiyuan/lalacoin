@@ -2,7 +2,7 @@
 var firebaseConfig = {
     apiKey: '{{ API_KEY }}',
     authDomain: '{{ AUTH_DOMAIN }}',
-    databaseURL: 'https://your database.europe-west1.firebasedatabase.app',
+    databaseURL: 'your database.firebasedatabase.app',
     projectId: '{{ PROJECT_ID }}',
     storageBucket: '{{ STORAGE_BUCKET }}',
     messagingSenderId: '{{ MESSAGING_SENDER_ID }}',
@@ -14,7 +14,7 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 // Load the data from the JSON file
 var xhr = new XMLHttpRequest();
-xhr.open('GET', 'https://your database.europe-west1.firebasedatabase.app/price_data.json', true);
+xhr.open('GET', 'https://yourdatabase.firebasedatabase.app/price_data.json', true);
 xhr.send();
 xhr.onload = function () {
     if (xhr.status === 200) {
@@ -72,7 +72,7 @@ xhr.onload = function () {
                             id: 'y-axis-price',
                             position: 'left',
                             ticks: {
-                                min: 22000
+                                min: 21000
                             },
 
                             scaleLabel: {
@@ -98,33 +98,51 @@ xhr.onload = function () {
     }
 };
 
-var alerts_enabled = true;
+var alertsEnabled = true;
+var minPrice = null;
+var maxPrice = null;
 
 // Get the toggle button
 var toggleButton = document.getElementById('toggleButton');
 
 // Set the initial state of the toggle button
-
-toggleButton.innerHTML = (alerts_enabled) ? "Pause Alerts" : "Resume Alerts";
-
+toggleButton.innerHTML = (alertsEnabled) ? "Pause" : "Resume";
 
 // Add click event listener to the toggle button
 toggleButton.addEventListener('click', function () {
     // Update the value of alertsEnabled
-    alerts_enabled = !alerts_enabled;
+    alertsEnabled = !alertsEnabled;
 
     // Update the text of the toggle button
-    toggleButton.innerHTML = (alerts_enabled) ? "Pause Alerts" : "Resume Alerts";
+    toggleButton.innerHTML = (alertsEnabled) ? "Pause" : "Resume";
 });
 
-var socket = io();
 
-socket.on('alert', function (data) {
-    // Create the alert box
+document.getElementById("updateButton").addEventListener("click", function() {
+    // Get the min and max prices
+    var inputMinPrice = document.getElementById("minPrice").value;
+    var inputMaxPrice = document.getElementById("maxPrice").value;
+
+     // Check if the user entered a value for minPrice
+     if (inputMinPrice) {
+        minPrice = parseFloat(inputMinPrice);
+    }
+    // Check if the user entered a value for maxPrice
+    if (inputMaxPrice) {
+        maxPrice = parseFloat(inputMaxPrice);
+    }
+
+    // Save the minimum and maximum price to the database
+    firebase.database().ref('price_data/minPrice').set(minPrice);
+    firebase.database().ref('price_data/maxPrice').set(maxPrice);
+
+    // Show the price limit updated alert message
+    var className = 'alert-success';
+    var message = "Price limit updated";
     var alertBox = document.createElement('div');
-    alertBox.classList.add('alert', 'alert-danger', 'fade', 'show');
+    alertBox.classList.add('alert', className, 'fade', 'show');
     alertBox.setAttribute('role', 'alert');
-    alertBox.innerHTML = data.data;
+    alertBox.innerHTML = message;
 
     // Add the alert box to the page
     document.getElementById('alertContainer').appendChild(alertBox);
@@ -137,14 +155,83 @@ socket.on('alert', function (data) {
         // Remove the alert box from the page after it has been hidden
         setTimeout(function () {
             alertBox.remove();
-        }, 500);//removes the HTML element represented by the alertBox variable from the DOM after 0.5 seconds have elapsed.
+        }, 500);
     }, 5000);
 });
 
 
-/* var socket = io();
-// Handle the alert event from the server
+
+var socket = io();
+
+// Get a reference to the Firebase database
+var database = firebase.database();
+
+// Get the minimum and maximum price from the database
+var minPriceRef = database.ref('minPrice');
+var maxPriceRef = database.ref('maxPrice');
+
+var minPrice = null;
+var maxPrice = null;
+
+minPriceRef.on('value', function (snapshot) {
+    minPrice = snapshot.val();
+});
+
+maxPriceRef.on('value', function (snapshot) {
+    maxPrice = snapshot.val();
+});
+
+
+minPriceRef.on('value', function (snapshot) {
+    minPrice = snapshot.val();
+    console.log('Min price: ', minPrice);
+}, function (error) {
+    console.error('Error retrieving min price: ', error);
+});
+
+maxPriceRef.on('value', function (snapshot) {
+    maxPrice = snapshot.val();
+    console.log('Max price: ', maxPrice);
+}, function (error) {
+    console.error('Error retrieving max price: ', error);
+});
+
 socket.on('alert', function (data) {
-// Show an alert message to the user
-alert(data.data);
-}); */
+    if (!alertsEnabled) {
+        return;
+    }
+
+    var className = 'alert-danger';
+    var message = data.data;
+
+    // Check if the message is a price alert
+    if (minPrice !== null && maxPrice !== null) {
+        var price = parseFloat(data.data);
+        if (price < minPrice || price > maxPrice) {
+            return;
+        } else {
+            className = 'alert-success';
+            message = "Price is within the limit";
+        }
+    }
+
+    // Create the alert box
+    var alertBox = document.createElement('div');
+    alertBox.classList.add('alert', className, 'fade', 'show');
+    alertBox.setAttribute('role', 'alert');
+    alertBox.innerHTML = message;
+
+    // Add the alert box to the page
+    document.getElementById('alertContainer').appendChild(alertBox);
+
+    // Remove the alert box after 5 seconds
+    setTimeout(function () {
+        alertBox.classList.remove('show');
+        alertBox.classList.add('hide');
+
+        // Remove the alert box from the page after it has been hidden
+        setTimeout(function () {
+            alertBox.remove();
+        }, 500);
+    }, 5000);
+});

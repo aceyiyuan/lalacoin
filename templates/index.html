@@ -24,19 +24,33 @@
     <div class="container-fluid">
         <div id="alertContainer"></div>
         <div class="row">
-          <div class="col-md-6 mx-auto">
-            <canvas id="myChart" width="100%" height="67%"></canvas>
-          </div>
+            <div class="col-md-6 mx-auto">
+                <canvas id="myChart" width="100%" height="67%"></canvas>
+            </div>
         </div>
-        <div class="row">
-          <div class="col-md-6 mx-auto">
-            <button id="toggleButton" class="btn btn-primary">Pause Alerts</button>
+        <div class="form-group row mb-2 mt-3" style="max-width: 500px; margin: 0 auto;">
+            <div class="col-12 text-center">
+              <label class="form-label">Set Alert Price Limits:</label>
+            </div>
+            <div class="col-4">
+              <input type="text" id="minPrice" class="form-control form-control-sm" placeholder="Min Price">
+            </div>
+            <div class="col-4">
+              <input type="text" id="maxPrice" class="form-control form-control-sm" placeholder="Max Price">
+            </div>
+            <div class="col-2">
+              <button id="updateButton" class="btn btn-sm btn-primary">Update</button>
+            </div>
+          
+            <div class="col-2">
+              <button id="toggleButton" class="btn btn-sm btn-secondary">Toggle Alerts</button>
+            </div>
           </div>
         </div>
     </div>
-      
 
-    <script type = "text/javascript"  src = "{{ url_for('static', filename = 'js/main.js') }}" ></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename = 'js/main.js') }}"></script>
 </body>
 
 </html>

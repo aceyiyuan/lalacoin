@@ -44,3 +44,14 @@ twilio==7.16.2
 uritemplate==4.1.1
 urllib3==1.26.14
 Werkzeug==2.2.2
+autopep8==2.0.1
+firebase==3.0.1
+gevent==22.10.2
+gevent-websocket==0.10.1
+greenlet==2.0.2
+pycodestyle==2.10.0
+python-dotenv==0.21.1
+tomli==2.0.1
+websocket==0.2.1
+zope.event==4.6
+zope.interface==5.5.2

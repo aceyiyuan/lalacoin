@@ -1,7 +1,8 @@
 import os
 import json
 import flask
-from flask import Flask, render_template, jsonify
+from werkzeug.exceptions import BadRequest
+from flask import Flask, render_template, jsonify,request,copy_current_request_context
 from flask_socketio import SocketIO, emit
 import requests
 from threading import Lock
@@ -34,7 +35,42 @@ alerts_enabled=True
 price_url = 'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'
 volume_url = 'https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT'
 
+
+# Store min and max price limits in a dictionary
+#price_limits = {"min": 22200, "max": 25000}//not working
+
+# Flag to keep track of whether alerts are paused
+alerts_paused = False
+
+def send_alert(price, min_or_max):
+    message = f"The price is now {min_or_max} {price} USD"
+    if not alerts_paused:
+        socketio.emit("alert", {"message": message}, broadcast=True)
+        # Send an SMS with Twilio
+        account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+        auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+        client = Client(account_sid, auth_token)        
+           
+        client.messages.create(
+            to=os.environ.get("TO"),
+            from_=os.environ.get("FROM"),
+            body=message
+        )
+def update_price_limits():
+# Get the price data from the database
+    price_data = db.reference('price_data').get()
+
+    # Get the minPrice and maxPrice values
+    if price_data:
+        
+        min_price = price_data.get('minPrice')
+        max_price = price_data.get('maxPrice')
+
+        # Return the min and max prices
+        return min_price, max_price
+    return None,None
 # Background thread to continuously retrieve price and volume data and emit it to clients
+
 def background_thread():
     prev_volume = None
     while True:
@@ -61,44 +97,29 @@ def background_thread():
         else:
             delta_volume = None
         prev_volume = volume
+  
+        min_price, max_price = update_price_limits()
+        # Check if the price is below the min limit or above the max limit
+        if min_price is not None and price < min_price:
+            send_alert(price, "below")
+        elif max_price is not None and price > max_price:
+                send_alert(price, "above")
 
         # Store the price, volume, and delta_volume data in Firebase database
         ref = db.reference('price_data')
         ref.push().set({"time": time, "price": price, "volume": volume, "delta_volume": delta_volume})
 
-        
-
-        # Check if the price is over 25000
-        if price >= 25000 and alerts_enabled:
-            # Emit an alert to clients
-            socketio.emit('alert', {'data': 'Bitcoin price over 25000!'})
-
-            # Send an SMS with Twilio
-
-            # Your Account SID and Auth Token from twilio.com/console
-       
-            account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
-            auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
-            client = Client(account_sid, auth_token)        
-           
-            message = client.messages.create(
-            to=os.environ.get("TO"),
-            from_=os.environ.get("FROM"),
-            body="Bitcoin price has reached over 25000 USD!")
-
-
         # Emit the price, volume, and delta_volume data to clients
         socketio.emit('my_response',
                       {'data': 'Bitcoin current price (USD): ' + str(price),
-                       'time': str(time),  'volume': volume, 'delta_volume': delta_volume})
-
-       
+                       'time': str(time), 'volume': volume, 'delta_volume': delta_volume})
+ 
 # Return the template 'index.html' and pass the async_mode variable to the template context
 
 @app.route('/')
 def index():
     return render_template('index.html', async_mode=socketio.async_mode,
-                           API_KEY=os.environ.get('API_KEY'),
+                           API_KEY=os.environ.get('API_KEY'), #firebaseConfig web app,measurementId is optional
                            AUTH_DOMAIN=os.environ.get('AUTH_DOMAIN'),
                            DATABASE_URL=os.environ.get('DATABASE_URL'),
                            PROJECT_ID=os.environ.get('PROJECT_ID'),
@@ -107,6 +128,13 @@ def index():
                            APP_ID=os.environ.get('APP_ID'),
                            MEASUREMENT_ID=os.environ.get('MEASUREMENT_ID'))
 
+@socketio.on("toggle_alerts")
+def toggle_alerts(data):
+    global alerts_paused
+    if data["state"] == "paused":
+        alerts_paused = True
+    else:
+        alerts_paused = False
 
 
 #WebSocket event handler for the 'connect' event
@@ -124,6 +152,10 @@ def connect():
 
 if __name__ == '__main__':
     socketio.run(app)
+
+
+
+
 
 
 

@@ -1,8 +1,20 @@
-#toggleButton {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 0.9em;
-    border-radius: 10px;
+#toggleButton, #updateButton {
+    font-size: 0.8em;
+    border-radius: 5px;
     background-color: rgba(54, 162, 235, 0.2);
     color: grey;
-  }
+    text-align: center;
+    display: inline-block;
+}
+
+input[type="number"] {
+  
+    padding: 5px;
+    font-size: 0.8em;
+    border-radius: 5px;
+}
+.form-label{
+    
+    font-family: "Helvetica Neue', 'Helvetica', 'Arial', sans-serif";
+    font-size: 0.8em;
+}
