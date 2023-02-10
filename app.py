@@ -19,7 +19,7 @@ load_dotenv()
 cred = credentials.Certificate("lala-coin-firebase-serviceaccountKey.json")
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred, {
-        'databaseURL': 'https://your database.europe-west1.firebasedatabase.app/'
+        'databaseURL': 'https://yourdatabase-west1.firebasedatabase.app/'
     })
 
 # Flask and SocketIO setup
@@ -37,7 +37,7 @@ volume_url = 'https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT'
 
 
 # Store min and max price limits in a dictionary
-#price_limits = {"min": 22200, "max": 25000}//not working
+#price_limits = {"min": 22200, "max": 25000}//notworking
 
 # Flag to keep track of whether alerts are paused
 alerts_paused = False
@@ -46,6 +46,7 @@ def send_alert(price, min_or_max):
     message = f"The price is now {min_or_max} {price} USD"
     if not alerts_paused:
         socketio.emit("alert", {"message": message}, broadcast=True)
+        """
         # Send an SMS with Twilio
         account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
         auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
@@ -56,6 +57,7 @@ def send_alert(price, min_or_max):
             from_=os.environ.get("FROM"),
             body=message
         )
+        """
 def update_price_limits():
 # Get the price data from the database
     price_data = db.reference('price_data').get()
@@ -76,6 +78,7 @@ def background_thread():
     while True:
         socketio.sleep(2)
         try:
+            
             price = ((requests.get(price_url)).json())['price']
             volume = ((requests.get(volume_url)).json())['volume']
         except Exception as e:

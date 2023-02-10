@@ -2,13 +2,13 @@
 var firebaseConfig = {
     apiKey: '{{ API_KEY }}',
     authDomain: '{{ AUTH_DOMAIN }}',
-    databaseURL: 'your database.firebasedatabase.app',
+    databaseURL: 'https://yourdatabase.firebasedatabase.app',
     projectId: '{{ PROJECT_ID }}',
     storageBucket: '{{ STORAGE_BUCKET }}',
     messagingSenderId: '{{ MESSAGING_SENDER_ID }}',
     appId: '{{ APP_ID }}',
     measurementId: '{{ MEASUREMENT_ID }}'
-    
+
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -20,19 +20,27 @@ xhr.onload = function () {
     if (xhr.status === 200) {
         var ref = firebase.database().ref("price_data");
         ref.on("value", function (snapshot) {
-            var jsondata = Object.values(snapshot.val());
+            if (snapshot.val()) {
+                var jsondata = Object.values(snapshot.val());
+                // Limit the data to 20 points
+                jsondata = jsondata.slice(Math.max(jsondata.length - 20, 0));
+                // Format the data for the chart
+                var time = [];
+                var price = [];
+                var delta_volume = [];
+                if (!maxPrice ||!minPrice){
+                for (var i = 0; i < jsondata.length; i++) {
+                    time.push(moment.unix(jsondata[i].time).format("MM-DD HH:mm:ss"));
+                    price.push(jsondata[i].price);
+                    delta_volume.push(jsondata[i].delta_volume);
+                }
 
-            // Limit the data to 20 points
-            jsondata = jsondata.slice(Math.max(jsondata.length - 20, 0));
-            // Format the data for the chart
-            var time = [];
-            var price = [];
-            var delta_volume = [];
-            for (var i = 0; i < jsondata.length; i++) {
-                time.push(moment.unix(jsondata[i].time).format("MM-DD HH:mm:ss"));
-                price.push(jsondata[i].price);
-                delta_volume.push(jsondata[i].delta_volume);
+
+            } else {
+                console.log('Error: snapshot.val() is null or undefined');
             }
+        }
+
             //time.reverse();
             // price.reverse();
             // Create the chart
@@ -118,23 +126,29 @@ toggleButton.addEventListener('click', function () {
 });
 
 
-document.getElementById("updateButton").addEventListener("click", function() {
+
+document.getElementById("updateButton").addEventListener("click", function () {
     // Get the min and max prices
-    var inputMinPrice = document.getElementById("minPrice").value;
-    var inputMaxPrice = document.getElementById("maxPrice").value;
+    var minPriceRef = firebase.database().ref('price_data/minPrice');
+    var maxPriceRef = firebase.database().ref('price_data/maxPrice');
 
-     // Check if the user entered a value for minPrice
-     if (inputMinPrice) {
-        minPrice = parseFloat(inputMinPrice);
+    // Get the user's input values for minPrice and maxPrice
+
+    var minPriceInput = document.getElementById("minPrice").value;
+    var maxPriceInput = document.getElementById("maxPrice").value;
+
+    // Check if the user entered a value for minPrice
+    if (minPriceInput) {
+        minPrice = parseFloat(minPriceInput);
+        minPriceRef.set(minPrice);
     }
+
     // Check if the user entered a value for maxPrice
-    if (inputMaxPrice) {
-        maxPrice = parseFloat(inputMaxPrice);
-    }
+    if (maxPriceInput) {
+        maxPrice = parseFloat(maxPriceInput);
+        maxPriceRef.set(maxPrice);
 
-    // Save the minimum and maximum price to the database
-    firebase.database().ref('price_data/minPrice').set(minPrice);
-    firebase.database().ref('price_data/maxPrice').set(maxPrice);
+    }
 
     // Show the price limit updated alert message
     var className = 'alert-success';
@@ -158,42 +172,29 @@ document.getElementById("updateButton").addEventListener("click", function() {
         }, 500);
     }, 5000);
 });
-
-
-
 var socket = io();
 
 // Get a reference to the Firebase database
 var database = firebase.database();
 
 // Get the minimum and maximum price from the database
-var minPriceRef = database.ref('minPrice');
-var maxPriceRef = database.ref('maxPrice');
-
+var minPriceRef = database.ref('price_data/minPrice');
+var maxPriceRef = database.ref('price_data/maxPrice');
 var minPrice = null;
 var maxPrice = null;
-
-minPriceRef.on('value', function (snapshot) {
-    minPrice = snapshot.val();
-});
-
-maxPriceRef.on('value', function (snapshot) {
-    maxPrice = snapshot.val();
-});
+// Get the minimum and maximum price from the database
+var minPriceRef = database.ref('price_data/minPrice');
+var maxPriceRef = database.ref('price_data/maxPrice');
 
 
 minPriceRef.on('value', function (snapshot) {
     minPrice = snapshot.val();
-    console.log('Min price: ', minPrice);
-}, function (error) {
-    console.error('Error retrieving min price: ', error);
+
 });
 
 maxPriceRef.on('value', function (snapshot) {
     maxPrice = snapshot.val();
-    console.log('Max price: ', maxPrice);
-}, function (error) {
-    console.error('Error retrieving max price: ', error);
+
 });
 
 socket.on('alert', function (data) {
@@ -202,36 +203,45 @@ socket.on('alert', function (data) {
     }
 
     var className = 'alert-danger';
-    var message = data.data;
+    var message = "";
 
-    // Check if the message is a price alert
-    if (minPrice !== null && maxPrice !== null) {
-        var price = parseFloat(data.data);
-        if (price < minPrice || price > maxPrice) {
-            return;
-        } else {
-            className = 'alert-success';
-            message = "Price is within the limit";
+    // Get the latest price data
+    var priceRef = database.ref('price_data');
+    priceRef.orderByChild('time').limitToLast(1).once('value', function (snapshot) {
+        var priceData = snapshot.val();
+        var price = parseFloat(priceData[Object.keys(priceData)[0]].price);
+
+
+        // Check if the price is within the limit
+        if (minPrice !== null || maxPrice !== null) {
+            if (minPrice !== null && price < minPrice) {
+                message = "The price has dropped below " + minPrice + " now is " + price + " USD";
+            } else if (maxPrice !== null && price > maxPrice) {
+                message = "The price is now " + price + " USD, higher than your " + maxPrice + " USD limit";
+            } else {
+                className = 'alert-success';
+                message = "Price is within the limit, the current price is " + price + " USD";
+            }
         }
-    }
 
-    // Create the alert box
-    var alertBox = document.createElement('div');
-    alertBox.classList.add('alert', className, 'fade', 'show');
-    alertBox.setAttribute('role', 'alert');
-    alertBox.innerHTML = message;
+        // Create the alert box
+        var alertBox = document.createElement('div');
+        alertBox.classList.add('alert', className, 'fade', 'show');
+        alertBox.setAttribute('role', 'alert');
+        alertBox.innerHTML = message;
 
-    // Add the alert box to the page
-    document.getElementById('alertContainer').appendChild(alertBox);
+        // Add the alert box to the page
+        document.getElementById('alertContainer').appendChild(alertBox);
 
-    // Remove the alert box after 5 seconds
-    setTimeout(function () {
-        alertBox.classList.remove('show');
-        alertBox.classList.add('hide');
-
-        // Remove the alert box from the page after it has been hidden
+        // Remove the alert box after 5 seconds
         setTimeout(function () {
-            alertBox.remove();
-        }, 500);
-    }, 5000);
+            alertBox.classList.remove('show');
+            alertBox.classList.add('hide');
+
+            // Remove the alert box from the page after it has been hidden
+            setTimeout(function () {
+                alertBox.remove();
+            }, 500);
+        }, 5000);
+    });
 });
