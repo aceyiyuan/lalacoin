@@ -110,6 +110,9 @@ var alertsEnabled = true;
 var minPrice = null;
 var maxPrice = null;
 
+// Get a reference to the Firebase database
+var database = firebase.database();
+
 // Get the toggle button
 var toggleButton = document.getElementById('toggleButton');
 
@@ -125,13 +128,13 @@ toggleButton.addEventListener('click', function () {
     toggleButton.innerHTML = (alertsEnabled) ? "Pause" : "Resume";
 });
 
+// Get the min and max prices
+var minPriceRef = firebase.database().ref('price_data/minPrice');
+var maxPriceRef = firebase.database().ref('price_data/maxPrice');
 
 
 document.getElementById("updateButton").addEventListener("click", function () {
-    // Get the min and max prices
-    var minPriceRef = firebase.database().ref('price_data/minPrice');
-    var maxPriceRef = firebase.database().ref('price_data/maxPrice');
-
+    
     // Get the user's input values for minPrice and maxPrice
 
     var minPriceInput = document.getElementById("minPrice").value;
@@ -174,17 +177,9 @@ document.getElementById("updateButton").addEventListener("click", function () {
 });
 var socket = io();
 
-// Get a reference to the Firebase database
-var database = firebase.database();
 
-// Get the minimum and maximum price from the database
-var minPriceRef = database.ref('price_data/minPrice');
-var maxPriceRef = database.ref('price_data/maxPrice');
 var minPrice = null;
 var maxPrice = null;
-// Get the minimum and maximum price from the database
-var minPriceRef = database.ref('price_data/minPrice');
-var maxPriceRef = database.ref('price_data/maxPrice');
 
 
 minPriceRef.on('value', function (snapshot) {
