@@ -19,7 +19,7 @@ load_dotenv()
 cred = credentials.Certificate("lala-coin-firebase-serviceaccountKey.json")
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred, {
-        'databaseURL': 'https://yourdatabase.firebasedatabase.app/'
+        'databaseURL': 'https://lala-coin-default-rtdb.europe-west1.firebasedatabase.app/'
     })
 
 # Flask and SocketIO setup
@@ -57,7 +57,7 @@ def send_alert(price, min_or_max):
             from_=os.environ.get("FROM"),
             body=message
         )
-        """
+    """
 def update_price_limits():
 # Get the price data from the database
     price_data = db.reference('price_data').get()
@@ -119,6 +119,14 @@ def background_thread():
  
 # Return the template 'index.html' and pass the async_mode variable to the template context
 
+@socketio.on("toggle_alerts")
+def toggle_alerts(data):
+    global alerts_paused
+    if data["state"] == "paused":
+        alerts_paused = True
+    else:
+        alerts_paused = False
+
 @app.route('/')
 def index():
     return render_template('index.html', async_mode=socketio.async_mode,
@@ -131,13 +139,7 @@ def index():
                            APP_ID=os.environ.get('APP_ID'),
                            MEASUREMENT_ID=os.environ.get('MEASUREMENT_ID'))
 
-@socketio.on("toggle_alerts")
-def toggle_alerts(data):
-    global alerts_paused
-    if data["state"] == "paused":
-        alerts_paused = True
-    else:
-        alerts_paused = False
+
 
 
 #WebSocket event handler for the 'connect' event

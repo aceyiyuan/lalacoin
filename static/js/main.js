@@ -2,7 +2,7 @@
 var firebaseConfig = {
     apiKey: '{{ API_KEY }}',
     authDomain: '{{ AUTH_DOMAIN }}',
-    databaseURL: 'https://yourdatabase.firebasedatabase.app',
+    databaseURL: 'https://lala-coin-default-rtdb.europe-west1.firebasedatabase.app',
     projectId: '{{ PROJECT_ID }}',
     storageBucket: '{{ STORAGE_BUCKET }}',
     messagingSenderId: '{{ MESSAGING_SENDER_ID }}',
@@ -14,7 +14,7 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 // Load the data from the JSON file
 var xhr = new XMLHttpRequest();
-xhr.open('GET', 'https://yourdatabase.firebasedatabase.app/price_data.json', true);
+xhr.open('GET', 'https://lala-coin-default-rtdb.europe-west1.firebasedatabase.app/price_data.json', true);
 xhr.send();
 xhr.onload = function () {
     if (xhr.status === 200) {
@@ -28,18 +28,22 @@ xhr.onload = function () {
                 var time = [];
                 var price = [];
                 var delta_volume = [];
-                if (!maxPrice ||!minPrice){
+                
                 for (var i = 0; i < jsondata.length; i++) {
-                    time.push(moment.unix(jsondata[i].time).format("MM-DD HH:mm:ss"));
-                    price.push(jsondata[i].price);
-                    delta_volume.push(jsondata[i].delta_volume);
+                    if (jsondata[i].hasOwnProperty("price")){
+                        time.push(moment.unix(jsondata[i].time).format("MM-DD HH:mm:ss"));
+                        price.push(jsondata[i].price);
+                        delta_volume.push(jsondata[i].delta_volume);
+
+                    }
+                   
                 }
 
 
             } else {
                 console.log('Error: snapshot.val() is null or undefined');
             }
-        }
+        
 
             //time.reverse();
             // price.reverse();
@@ -175,7 +179,12 @@ document.getElementById("updateButton").addEventListener("click", function () {
         }, 500);
     }, 5000);
 });
+
 var socket = io();
+
+socket.on("toggle_alerts", function (data) {
+    alertsEnabled = data.state === "enabled";
+});
 
 
 minPriceRef.on('value', function (snapshot) {
