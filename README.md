@@ -1,4 +1,4 @@
-Real-time Stock/Crypto Market Data Visualization with Flask, SocketIO, and Chart.js:
+## Real-time Stock/Crypto Market Data Visualization with Flask, SocketIO, and Chart.js:
 
 The app is a demo that shows how to use Flask and SocketIO to capture real-time data from the stock/cryptocurrency market. In this case, it captures the Bitcoin price and plots it through Chart.js. Users can create alerts by setting price limits, pausing/resuming alert messages, and resetting new price limits whenever they want. Thanks to Firebase Realtime Database, all changes in both prices and transaction volume are saved.
 
