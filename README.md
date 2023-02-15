@@ -38,3 +38,4 @@ flask run
 Note: Before running the flask run command, make sure you have navigated to the project directory where the app.py file is located. 
 Also, ensure that the requirements.txt file is present in the same directory.
 
+![Project Name (1)](https://user-images.githubusercontent.com/49494825/219082978-1360abfb-cb59-4131-8e94-fe1d28321d32.gif)
