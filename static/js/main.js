@@ -53,53 +53,83 @@ xhr.onload = function () {
                 type: 'bar',
                 data: {
                     labels: time,
+
                     datasets: [{
                         label: 'Price (USD)',
                         type: 'line',
                         data: price,
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgb(96, 27, 207)',
+                        borderColor: 'white',
                         borderWidth: 1,
                         yAxisID: 'y-axis-price',
-                        fill: false
+                        fill: false,
+                        fontColor:"white"
                     },
                     {
-                        label: 'Transaction volume in Binance',
+                        label: 'Transaction volume on Binance',
                         data: delta_volume,
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: '#FF5733',
+                        borderColor: '#C70039',
                         borderWidth: 1,
                         yAxisID: 'y-axis-amount',
-                        fill: false
+                        fill: false,
+                        fontColor:"white"
                     }]
                 },
                 options: {
                     title: {
                         display: true,
-                        text: 'Bitoin real time price and volume in Binance'
+                        text: 'Bitcoin real-time price and volume on Binance',
+                        fontColor:"white",
+                        fontSize: 16
                     },
+                   
+                   
                     scales: {
-
+                        xAxes: [{
+                            gridLines: {
+                              display: true,
+                              color: "grey"
+                            },
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Price',
+                                fontColor:"white"
+                            },
+                            ticks: {
+                              
+                                fontColor:"white"
+                            },
+                          }],
+                        
                         yAxes: [{
                             id: 'y-axis-price',
                             position: 'left',
                             ticks: {
-                                min: 21000
+                                min: 21000,
+                                fontColor:"white"
                             },
-
+                            gridLines: {
+                                color: 'grey'
+                            },
                             scaleLabel: {
                                 display: true,
-                                labelString: 'Price'
+                                labelString: 'Price',
+                                fontColor:"white"
                             }
                         },
                         {
                             id: 'y-axis-amount',
                             position: 'right',
                             ticks: {
-                                min: -50
-                            }, scaleLabel: {
+                                min: -50,
+                                fontColor:"white"
+                            }, 
+                         
+                            scaleLabel: {
                                 display: true,
-                                labelString: 'Transcation volume'
+                                labelString: 'Transcation volume',
+                                fontColor:"white"
                             }
                         }]
                     }
