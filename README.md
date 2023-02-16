@@ -1,8 +1,24 @@
-## Real-time Stock/Crypto Market Data Visualization with Flask, SocketIO, Chart.js and Firebase:
+## Real-time Stock/Crypto Market Data Visualization with Flask, SocketIO, Chart.js and Firebase
 
-The app is a demo that shows how to use Flask and SocketIO to capture real-time data from the stock/cryptocurrency market. In this case, it captures the Bitcoin price and plots it through Chart.js. Users can create alerts by setting price limits, pausing/resuming alert messages, and resetting new price limits whenever they want. Thanks to Firebase Realtime Database, all changes in both prices and transaction volume are saved.
+This app is a demo that demonstrates how to use Flask and SocketIO to capture real-time data from the stock and cryptocurrency market. Specifically, it captures the price of Bitcoin and plots it using Chart.js. Users can create alerts by setting price limits, pausing or resuming alert messages, and resetting price limits as needed. Thanks to Firebase Realtime Database, all changes in both prices and transaction volume are saved in real-time.
 
-Quick start: 
+## Pre-settings
+
+Before you can use the app, you'll need to complete the following pre-settings:
+
+1. Set up Firebase in app.py and enable real-time data storage by using the following code. Replace "yourprojectname-firebase-serviceaccountKey.json" with your actual service account file name. After registering on Firebase, download the service account file and rename it to match the filename in the code.
+
+&emsp;&emsp;Optionally, if you also want to receive alert messages via phone, you can register your app on Twilio."
+
+```
+cred = credentials.Certificate("yourprojectname-firebase-serviceaccountKey.json")
+
+```
+2. Rename copyenvfile to .env and save it in the root directory. Follow the instructions in the file.
+
+## Quick start: 
+
+Follow these steps to quickly get started with the app:
 
 1. Install virtualenv by running the following command in your terminal:
 
