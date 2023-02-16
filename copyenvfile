@@ -1,0 +1,14 @@
+//optional-  If you want to receive alert messages via text message on your phone, you can register on Twilio to get your credentials. To register, visit https://www.twilio.com/try-twilio.TWILIO_ACCOUNT_SID=AMstometring
+TWILIO_AUTH_TOKEN=csomestringtoken
+TO=+yourcountrycode+yourphonenumber
+FROM=+the twiolio number assigned to you
+
+//To install and set up Firebase in JavaScript for web, you can follow the instructions provided in the official documentation at https://firebase.google.com/docs/database/web/start#web-version-9.
+API_KEY=ALzablalalallalbalalal
+AUTH_DOMAIN=yourdatabasename.firebaseapp.com
+DATABASE_URL=https://database.zone.firebasedatabase.app
+PROJECT_ID=yourprojectid
+STORAGE_BUCKET=yourdatabase.appspot.com
+MESSAGING_SENDER_ID=somenumber
+APP_ID=1:somenumbers:web:somestring
+MEASUREMENT_ID=G-somestring
